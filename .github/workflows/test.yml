@@ -1,0 +1,85 @@
+name: Test Python Extension Behavior
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-python-extension-behavior:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Step 2: Install Node.js (required for extension installation if needed)
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+      - uses: listendev/action@v0.11
+        with:
+          jwt: ${{ secrets.LSTN }}
+          ci: only
+      # Step 3: Install VSCode CLI
+      - name: Install VSCode
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y software-properties-common apt-transport-https wget gpg
+          
+          # Add Microsoft repository and GPG keys
+          wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
+          sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/
+          sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list'
+          
+          # Update and install VSCode
+          sudo apt-get update
+          sudo apt-get install -y code
+
+      # Step 4: Install the Python extension from the Marketplace
+      - name: Install Python Extension
+        run: |
+          code --install-extension ms-python.python
+
+      # # Step 5: Find the `printEnvVariable` script in the extension folder
+      # - name: Locate printEnvVariable Script
+      #   run: |
+      #     # Locate where the VSCode extensions are installed
+      #     EXTENSION_DIR=$(code --list-extensions --show-versions --verbose | grep "ms-python.python" | awk '{print $NF}')
+          
+      #     # Verify if the pythonFiles folder exists
+      #     if [ -d "$EXTENSION_DIR/pythonFiles" ]; then
+      #       echo "pythonFiles folder exists in the extension."
+      #     else
+      #       echo "pythonFiles folder not found!"
+      #       exit 1
+      #     fi
+          
+      #     # Locate the script file (printEnvVariable)
+      #     if [ -f "$EXTENSION_DIR/pythonFiles/printEnvVariable" ]; then
+      #       echo "Found the printEnvVariable script."
+      #     else
+      #       echo "printEnvVariable script not found!"
+      #       exit 1
+      #     fi
+
+      # # Step 6: Run the `printEnvVariable` script
+      # - name: Run printEnvVariable Script
+      #   run: |
+      #     # Set a sample environment variable
+      #     export SAMPLE_VAR="TestValue"
+
+      #     # Execute the script and capture its output
+      #     EXTENSION_DIR=$(code --list-extensions --show-versions --verbose | grep "ms-python.python" | awk '{print $NF}')
+      #     python3 $EXTENSION_DIR/pythonFiles/printEnvVariable SAMPLE_VAR
+
+      # # Step 7: Verify the output of the script
+      # - name: Verify Output
+      #   run: |
+      #     echo "Verifying output..."
+      #     # Add any assertions or checks to verify the expected behavior of the script
