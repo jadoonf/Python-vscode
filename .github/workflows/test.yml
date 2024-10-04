@@ -3,7 +3,7 @@ name: Test Python Extension Behavior
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
       - main
